@@ -13,7 +13,10 @@ namespace dektrium\user\models;
 
 use dektrium\user\Finder;
 use dektrium\user\Mailer;
+use dektrium\user\traits\ModuleTrait;
+use Yii;
 use yii\base\Model;
+use yii\helpers\ArrayHelper;
 
 /**
  * Model for collecting data on password recovery.
@@ -24,6 +27,7 @@ use yii\base\Model;
  */
 class RecoveryForm extends Model
 {
+    use ModuleTrait;
     /** @var string */
     public $email;
 
@@ -32,9 +36,6 @@ class RecoveryForm extends Model
 
     /** @var User */
     protected $user;
-
-    /** @var \dektrium\user\Module */
-    protected $module;
 
     /** @var Mailer */
     protected $mailer;
@@ -49,7 +50,6 @@ class RecoveryForm extends Model
      */
     public function __construct(Mailer $mailer, Finder $finder, $config = [])
     {
-        $this->module = \Yii::$app->getModule('user');
         $this->mailer = $mailer;
         $this->finder = $finder;
         parent::__construct($config);
@@ -59,39 +59,48 @@ class RecoveryForm extends Model
     public function attributeLabels()
     {
         return [
-            'email'    => \Yii::t('user', 'Email'),
-            'password' => \Yii::t('user', 'Password'),
+            'email'    => Yii::t('user', 'Email'),
+            'password' => Yii::t('user', 'Password'),
         ];
     }
 
     /** @inheritdoc */
     public function scenarios()
     {
-        return [
+        $scenarios = parent::scenarios();
+        return ArrayHelper::merge($scenarios, [
             'request' => ['email'],
-            'reset'   => ['password']
-        ];
+            'reset'   => ['password'],
+        ]);
     }
 
     /** @inheritdoc */
     public function rules()
     {
         return [
-            ['email', 'filter', 'filter' => 'trim'],
-            ['email', 'required'],
-            ['email', 'email'],
-            ['email', 'exist',
+            'emailTrim' => ['email', 'filter', 'filter' => 'trim'],
+            'emailRequired' => ['email', 'required'],
+            'emailPattern' => ['email', 'email'],
+            'emailExist' => [
+                'email',
+                'exist',
                 'targetClass' => $this->module->modelMap['User'],
-                'message' => \Yii::t('user', 'There is no user with such email.')
+                'message' => Yii::t('user', 'There is no user with this email address'),
             ],
-            ['email', function ($attribute) {
-                $this->user = $this->finder->findUserByEmail($this->email);
-                if ($this->user !== null && $this->module->enableConfirmation && !$this->user->getIsConfirmed()) {
-                    $this->addError($attribute, \Yii::t('user', 'You need to confirm your email address'));
+            'emailUnconfirmed' => [
+                'email',
+                function ($attribute) {
+                    $this->user = $this->finder->findUserByEmail($this->email);
+                    if ($this->user !== null && $this->module->enableConfirmation && !$this->user->isConfirmed) {
+                        $this->addError($attribute, Yii::t('user', 'You need to confirm your email address'));
+                    }
+                    if ($this->user->isBlocked) {
+                        $this->addError($attribute, Yii::t('user', 'Your account has been blocked'));
+                    }
                 }
-            }],
-            ['password', 'required'],
-            ['password', 'string', 'min' => 6],
+            ],
+            'passwordRequired' => ['password', 'required'],
+            'passwordLength' => ['password', 'string', 'min' => 6],
         ];
     }
 
@@ -104,14 +113,24 @@ class RecoveryForm extends Model
     {
         if ($this->validate()) {
             /** @var Token $token */
-            $token = \Yii::createObject([
+            $token = Yii::createObject([
                 'class'   => Token::className(),
                 'user_id' => $this->user->id,
-                'type'    => Token::TYPE_RECOVERY
+                'type'    => Token::TYPE_RECOVERY,
             ]);
-            $token->save(false);
-            $this->mailer->sendRecoveryMessage($this->user, $token);
-            \Yii::$app->session->setFlash('info', \Yii::t('user', 'You will receive an email with instructions on how to reset your password in a few minutes.'));
+
+            if (!$token->save(false)) {
+                return false;
+            }
+
+            if (!$this->mailer->sendRecoveryMessage($this->user, $token)) {
+                return false;
+            }
+
+            Yii::$app->session->setFlash('info',
+                Yii::t('user', 'An email has been sent with instructions for resetting your password')
+            );
+
             return true;
         }
 
@@ -121,7 +140,8 @@ class RecoveryForm extends Model
     /**
      * Resets user's password.
      *
-     * @param  Token $token
+     * @param Token $token
+     *
      * @return bool
      */
     public function resetPassword(Token $token)
@@ -131,10 +151,10 @@ class RecoveryForm extends Model
         }
 
         if ($token->user->resetPassword($this->password)) {
-            \Yii::$app->session->setFlash('success', \Yii::t('user', 'Your password has been changed successfully.'));
+            Yii::$app->session->setFlash('success', Yii::t('user', 'Your password has been changed successfully.'));
             $token->delete();
         } else {
-            \Yii::$app->session->setFlash('danger', \Yii::t('user', 'An error occurred and your password has not been changed. Please try again later.'));
+            Yii::$app->session->setFlash('danger', Yii::t('user', 'An error occurred and your password has not been changed. Please try again later.'));
         }
 
         return true;

@@ -51,7 +51,7 @@ class Module extends BaseModule
     /** @var bool Whether to enable password recovery. */
     public $enablePasswordRecovery = true;
 
-    /** @var integer Email changing strategy. */
+    /** @var int Email changing strategy. */
     public $emailChangeStrategy = self::STRATEGY_DEFAULT;
 
     /** @var int The time you want the user will be remembered without asking for credentials. */
@@ -68,54 +68,31 @@ class Module extends BaseModule
 
     /** @var array An array of administrator's usernames. */
     public $admins = [];
+	
+	/** @var string The Administrator permission name. */
+    public $adminPermission;
 
     /** @var array Mailer configuration */
     public $mailer = [];
 
+    /** @var array Model map */
+    public $modelMap = [];
+
     /**
      * @var string The prefix for user module URL.
+     *
      * @See [[GroupUrlRule::prefix]]
      */
     public $urlPrefix = 'user';
 
     /** @var array The rules to be used in URL management. */
     public $urlRules = [
-        '<id:\d+>'                    => 'profile/show',
-        '<action:(login|logout)>'     => 'security/<action>',
-        '<action:(register|resend)>'  => 'registration/<action>',
-        'confirm/<id:\d+>/<code:\w+>' => 'registration/confirm',
-        'forgot'                      => 'recovery/request',
-        'recover/<id:\d+>/<code:\w+>' => 'recovery/reset',
-        'settings/<action:\w+>'       => 'settings/<action>'
+        '<id:\d+>'                               => 'profile/show',
+        '<action:(login|logout)>'                => 'security/<action>',
+        '<action:(register|resend)>'             => 'registration/<action>',
+        'confirm/<id:\d+>/<code:[A-Za-z0-9_-]+>' => 'registration/confirm',
+        'forgot'                                 => 'recovery/request',
+        'recover/<id:\d+>/<code:[A-Za-z0-9_-]+>' => 'recovery/reset',
+        'settings/<action:\w+>'                  => 'settings/<action>'
     ];
-
-    /** @var array Model's map */
-    private $_modelMap = [
-        'User'             => 'dektrium\user\models\User',
-        'Account'          => 'dektrium\user\models\Account',
-        'Profile'          => 'dektrium\user\models\Profile',
-        'Token'            => 'dektrium\user\models\Token',
-        'RegistrationForm' => 'dektrium\user\models\RegistrationForm',
-        'ResendForm'       => 'dektrium\user\models\ResendForm',
-        'LoginForm'        => 'dektrium\user\models\LoginForm',
-        'SettingsForm'     => 'dektrium\user\models\SettingsForm',
-        'RecoveryForm'     => 'dektrium\user\models\RecoveryForm',
-        'UserSearch'       => 'dektrium\user\models\UserSearch',
-    ];
-
-    /**
-     * @return array
-     */
-    public function getModelMap()
-    {
-        return $this->_modelMap;
-    }
-
-    /**
-     * @param array $modelMap
-     */
-    public function setModelMap($modelMap)
-    {
-        $this->_modelMap = array_merge($this->_modelMap, $modelMap);
-    }
 }

@@ -12,7 +12,7 @@
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
-/**
+/*
  * @var $this  yii\web\View
  * @var $form  yii\widgets\ActiveForm
  * @var $model dektrium\user\models\SettingsForm
@@ -51,7 +51,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                 <?= $form->field($model, 'new_password')->passwordInput() ?>
 
-                <hr/>
+                <hr />
 
                 <?= $form->field($model, 'current_password')->passwordInput() ?>
 
