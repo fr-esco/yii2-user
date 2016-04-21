@@ -14,6 +14,11 @@
             "name": "Dmitry Erofeev",
             "email": "dmeroff@gmail.com",
             "homepage": "http://dmeroff.ru"
+        },
+        {
+            "name": "Francesco Colamonici",
+            "email": "f.colamonici@gmail.com",
+            "homepage": "https://it.gravatar.com/fresco7189"
         }
     ],
     "minimum-stability": "dev",
