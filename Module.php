@@ -105,8 +105,8 @@ class Module extends BaseModule
 
     /** @var array The rules to be used in URL management. */
     public $urlRulesRest = [
-        'GET,HEAD <id:\d+>'                      => 'rest-profile/show',
-        'POST <action:(login|logout)>'           => 'rest-security/<action>',
+        '<id:\d+>'                      => 'rest-profile/show',
+        '<action:(login|logout)>'           => 'rest-security/<action>',
         '<action:(register|resend)>'             => 'rest-registration/<action>',
         'confirm/<id:\d+>/<code:[A-Za-z0-9_-]+>' => 'rest-registration/confirm',
         'forgot'                                 => 'rest-recovery/request',
