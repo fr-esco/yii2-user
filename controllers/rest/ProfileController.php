@@ -61,7 +61,7 @@ class ProfileController extends Controller
     {
         return [
             'index' => ['GET', 'HEAD'],
-            'show' => ['GET', 'HEAD']
+            'show' => ['GET', 'HEAD'],
         ];
     }
 
@@ -73,7 +73,7 @@ class ProfileController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     ['allow' => true, 'actions' => ['index'], 'roles' => ['@']],
-                    ['allow' => true, 'actions' => ['show'], 'roles' => ['@']],
+                    ['allow' => true, 'actions' => ['show'], 'roles' => ['?', '@']],
                 ],
             ],
         ]);
@@ -105,8 +105,6 @@ class ProfileController extends Controller
             throw new NotFoundHttpException();
         }
 
-        return $this->render('show', [
-            'profile' => $profile,
-        ]);
+        return $profile;
     }
 }
