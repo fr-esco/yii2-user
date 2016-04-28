@@ -42,9 +42,7 @@ class ProfileController extends Controller
         parent::__construct($id, $module, $config);
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function actions()
     {
         return [
@@ -54,9 +52,7 @@ class ProfileController extends Controller
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function verbs()
     {
         return [

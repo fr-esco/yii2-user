@@ -16,7 +16,6 @@ use dektrium\user\models\Account;
 use dektrium\user\models\LoginForm;
 use dektrium\user\models\User;
 use dektrium\user\Module;
-use dektrium\user\traits\AjaxValidationTrait;
 use dektrium\user\traits\EventTrait;
 use Yii;
 use yii\authclient\AuthAction;
@@ -36,7 +35,6 @@ use yii\web\ConflictHttpException;
  */
 class SecurityController extends Controller
 {
-    use AjaxValidationTrait;
     use EventTrait;
 
     /**
@@ -135,9 +133,7 @@ class SecurityController extends Controller
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function verbs()
     {
         return [
