@@ -25,6 +25,7 @@ use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\rest\Controller;
+use yii\web\ConflictHttpException;
 use yii\web\Response;
 
 /**
@@ -151,7 +152,7 @@ class SecurityController extends Controller
     /**
      * Displays the login page.
      *
-     * @return string|Response
+     * @return bool|LoginForm
      */
     public function actionLogin()
     {
@@ -163,10 +164,9 @@ class SecurityController extends Controller
         $model = Yii::createObject(LoginForm::className());
         $event = $this->getFormEvent($model);
 
-        // $this->performAjaxValidation($model);
         $this->trigger(self::EVENT_BEFORE_LOGIN, $event);
 
-        if ($model->load(Yii::$app->getRequest()->getBodyParams(), '') && $model->login()) {
+        if ($model->load(Yii::$app->request->getBodyParams(), '') && $model->login()) {
             $this->trigger(self::EVENT_AFTER_LOGIN, $event);
 
             return true;
@@ -178,7 +178,8 @@ class SecurityController extends Controller
     /**
      * Logs the user out and then redirects to the homepage.
      *
-     * @return Response
+     * @return bool
+     * @throws ConflictHttpException
      */
     public function actionLogout()
     {
@@ -186,11 +187,13 @@ class SecurityController extends Controller
 
         $this->trigger(self::EVENT_BEFORE_LOGOUT, $event);
 
-        Yii::$app->getUser()->logout();
+        if (Yii::$app->user->logout()) {
+            $this->trigger(self::EVENT_AFTER_LOGOUT, $event);
 
-        $this->trigger(self::EVENT_AFTER_LOGOUT, $event);
+            return true;
+        }
 
-        return $this->goHome();
+        throw new ConflictHttpException;
     }
 
     /**

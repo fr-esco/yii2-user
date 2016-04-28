@@ -94,15 +94,15 @@ class ProfileController extends Controller
      *
      * @param int $id
      *
-     * @return \yii\web\Response
-     * @throws \yii\web\NotFoundHttpException
+     * @return \dektrium\user\models\Profile
+     * @throws NotFoundHttpException
      */
     public function actionShow($id)
     {
         $profile = $this->finder->findProfileById($id);
 
         if ($profile === null) {
-            throw new NotFoundHttpException();
+            throw new NotFoundHttpException;
         }
 
         return $profile;
