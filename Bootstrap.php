@@ -22,6 +22,7 @@ use yii\i18n\PhpMessageSource;
  * when UrlManager.enablePrettyUrl is enabled.
  *
  * @author Dmitry Erofeev <dmeroff@gmail.com>
+ * @author Francesco Colamonici <f.colamonici@gmail.com>
  */
 class Bootstrap implements BootstrapInterface
 {
@@ -92,7 +93,7 @@ class Bootstrap implements BootstrapInterface
                     'rules' => $module->urlRulesRest,
                 ];
 
-                if ($module->urlPrefixRest != 'user') {
+                if ($module->urlPrefixRest != 'user/rest') {
                     $configUrlRuleRest['routePrefix'] = 'user/rest';
                 }
 

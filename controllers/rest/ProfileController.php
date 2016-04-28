@@ -23,7 +23,7 @@ use yii\web\NotFoundHttpException;
  *
  * @property \dektrium\user\Module $module
  *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
+ * @author Francesco Colamonici <f.colamonici@gmail.com>
  */
 class ProfileController extends Controller
 {
@@ -73,7 +73,7 @@ class ProfileController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     ['allow' => true, 'actions' => ['index'], 'roles' => ['@']],
-                    ['allow' => true, 'actions' => ['show'], 'roles' => ['?', '@']],
+                    ['allow' => true, 'actions' => ['show'], 'roles' => ['@']],
                 ],
             ],
         ]);

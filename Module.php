@@ -19,6 +19,7 @@ use yii\base\Module as BaseModule;
  * @property array $modelMap
  *
  * @author Dmitry Erofeev <dmeroff@gmail.com>
+ * @author Francesco Colamonici <f.colamonici@gmail.com>
  */
 class Module extends BaseModule
 {
