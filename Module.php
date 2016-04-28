@@ -68,7 +68,7 @@ class Module extends BaseModule
 
     /** @var array An array of administrator's usernames. */
     public $admins = [];
-	
+
 	/** @var string The Administrator permission name. */
     public $adminPermission;
 
@@ -85,6 +85,13 @@ class Module extends BaseModule
      */
     public $urlPrefix = 'user';
 
+    /**
+     * @var string The prefix for user module URL.
+     *
+     * @See [[GroupUrlRule::prefix]]
+     */
+    public $urlPrefixRest = 'user-rest';
+
     /** @var array The rules to be used in URL management. */
     public $urlRules = [
         '<id:\d+>'                               => 'profile/show',
@@ -94,5 +101,16 @@ class Module extends BaseModule
         'forgot'                                 => 'recovery/request',
         'recover/<id:\d+>/<code:[A-Za-z0-9_-]+>' => 'recovery/reset',
         'settings/<action:\w+>'                  => 'settings/<action>'
+    ];
+
+    /** @var array The rules to be used in URL management. */
+    public $urlRulesRest = [
+        'GET,HEAD <id:\d+>'                      => 'rest-profile/show',
+        'POST <action:(login|logout)>'           => 'rest-security/<action>',
+        '<action:(register|resend)>'             => 'rest-registration/<action>',
+        'confirm/<id:\d+>/<code:[A-Za-z0-9_-]+>' => 'rest-registration/confirm',
+        'forgot'                                 => 'rest-recovery/request',
+        'recover/<id:\d+>/<code:[A-Za-z0-9_-]+>' => 'rest-recovery/reset',
+        'settings/<action:\w+>'                  => 'rest-settings/<action>'
     ];
 }

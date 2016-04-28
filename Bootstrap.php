@@ -84,8 +84,26 @@ class Bootstrap implements BootstrapInterface
 
                 $configUrlRule['class'] = 'yii\web\GroupUrlRule';
                 $rule = Yii::createObject($configUrlRule);
-                
+
                 $app->urlManager->addRules([$rule], false);
+
+                $configUrlRuleRest = [
+                    'prefix' => $module->urlPrefixRest,
+                    'rules' => $module->urlRulesRest,
+                ];
+
+                if ($module->urlPrefixRest != 'user') {
+                    $configUrlRuleRest['routePrefix'] = 'user';
+                }
+
+                $configUrlRuleRest['class'] = 'yii\web\GroupUrlRule';
+                $ruleRest = Yii::createObject($configUrlRuleRest);
+
+                $app->urlManager->addRules([$ruleRest], false);
+
+                if (!$app->request->parsers['application/json']) {
+                    $app->request->parsers['application/json'] = 'yii\web\JsonParser';
+                }
 
                 if (!$app->has('authClientCollection')) {
                     $app->set('authClientCollection', [
