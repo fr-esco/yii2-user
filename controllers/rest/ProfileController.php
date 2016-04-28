@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace dektrium\user\controllers;
+namespace dektrium\user\controllers\rest;
 
 use dektrium\user\Finder;
 use Yii;
@@ -25,7 +25,7 @@ use yii\web\NotFoundHttpException;
  *
  * @author Dmitry Erofeev <dmeroff@gmail.com>
  */
-class RestProfileController extends Controller
+class ProfileController extends Controller
 {
     /** @var Finder */
     protected $finder;

@@ -93,7 +93,7 @@ class Bootstrap implements BootstrapInterface
                 ];
 
                 if ($module->urlPrefixRest != 'user') {
-                    $configUrlRuleRest['routePrefix'] = 'user';
+                    $configUrlRuleRest['routePrefix'] = 'user/rest';
                 }
 
                 $configUrlRuleRest['class'] = 'yii\web\GroupUrlRule';
