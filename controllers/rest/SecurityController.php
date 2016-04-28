@@ -22,7 +22,7 @@ use Yii;
 use yii\authclient\AuthAction;
 use yii\authclient\ClientInterface;
 use yii\filters\AccessControl;
-use yii\filters\VerbFilter;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\rest\Controller;
 use yii\web\Response;
@@ -106,15 +106,15 @@ class SecurityController extends Controller
     /** @inheritdoc */
     public function behaviors()
     {
-        return [
+        return ArrayHelper::merge(parent::behaviors(), [
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [
                     ['allow' => true, 'actions' => ['login', 'auth', 'blocked'], 'roles' => ['?']],
                     ['allow' => true, 'actions' => ['login', 'auth', 'logout'], 'roles' => ['@']],
                 ],
-            ]
-        ];
+            ],
+        ]);
     }
 
     /** @inheritdoc */
@@ -144,6 +144,7 @@ class SecurityController extends Controller
             'login' => ['POST'],
             'logout' => ['POST'],
             'auth' => ['POST'],
+            'blocked' => ['POST'],
         ];
     }
 
