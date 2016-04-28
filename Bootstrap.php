@@ -101,7 +101,7 @@ class Bootstrap implements BootstrapInterface
 
                 $app->urlManager->addRules([$ruleRest], false);
 
-                if (!$app->request->parsers['application/json']) {
+                if (!isset($app->request->parsers['application/json'])) {
                     $app->request->parsers['application/json'] = 'yii\web\JsonParser';
                 }
 
