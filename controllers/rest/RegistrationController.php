@@ -22,7 +22,7 @@ use dektrium\user\traits\EventTrait;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
-use yii\web\Controller;
+use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
 
 /**
