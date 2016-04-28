@@ -65,7 +65,7 @@ class RestProfileController extends Controller
         ];
     }
 
-    /** @inheritdoc *
+    /** @inheritdoc */
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(), [
