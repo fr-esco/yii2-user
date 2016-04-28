@@ -19,6 +19,7 @@ use yii\authclient\ClientInterface as BaseClientInterface;
 use yii\db\ActiveRecord;
 use yii\helpers\Json;
 use yii\helpers\Url;
+use yii\web\ConflictHttpException;
 
 /**
  * @property integer $id          Id
@@ -82,14 +83,17 @@ class Account extends ActiveRecord
 
     /**
      * Returns connect url.
+     *
+     * @param bool $rest Whether the context is REST
+     *
      * @return string
      */
-    public function getConnectUrl()
+    public function getConnectUrl($rest = false)
     {
         $code = \Yii::$app->security->generateRandomString();
         $this->updateAttributes(['code' => md5($code)]);
 
-        return Url::to(['/user/registration/connect', 'code' => $code]);
+        return Url::to(['/user' . ($rest ? '/rest' : '') . '/registration/connect', 'code' => $code]);
     }
 
     public function connect(User $user)
@@ -140,13 +144,21 @@ class Account extends ActiveRecord
      * Tries to find an account and then connect that account with current user.
      *
      * @param BaseClientInterface $client
+     * @param bool $rest Whether the context is REST
+     * 
+     * @return bool
+     * @throws ConflictHttpException
      */
-    public static function connectWithUser(BaseClientInterface $client)
+    public static function connectWithUser(BaseClientInterface $client, $rest = false)
     {
         if (\Yii::$app->user->isGuest) {
-            \Yii::$app->session->setFlash('danger', \Yii::t('user', 'Something went wrong'));
+            if ($rest) {
+                throw new ConflictHttpException(\Yii::t('user', 'Something went wrong'));
+            } else {
+                \Yii::$app->session->setFlash('danger', \Yii::t('user', 'Something went wrong'));
 
-            return;
+                return false;
+            }
         }
 
         $account = static::fetchAccount($client);
@@ -154,9 +166,16 @@ class Account extends ActiveRecord
         if ($account->user === null) {
             $account->link('user', \Yii::$app->user->identity);
             \Yii::$app->session->setFlash('success', \Yii::t('user', 'Your account has been connected'));
+            return true;
         } else {
-            \Yii::$app->session->setFlash('danger', \Yii::t('user', 'This account has already been connected to another user'));
+            if ($rest) {
+                throw new ConflictHttpException(\Yii::t('user', 'This account has already been connected to another user'));
+            } else {
+                \Yii::$app->session->setFlash('danger', \Yii::t('user', 'This account has already been connected to another user'));
+            }
         }
+        
+        return false;
     }
 
     /**

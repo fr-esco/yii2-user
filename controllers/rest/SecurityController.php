@@ -26,7 +26,6 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\rest\Controller;
 use yii\web\ConflictHttpException;
-use yii\web\Response;
 
 /**
  * Controller that manages user authentication process.
@@ -202,16 +201,15 @@ class SecurityController extends Controller
      * to create new user account.
      *
      * @param ClientInterface $client
+     *
+     * @throws ConflictHttpException
      */
     public function authenticate(ClientInterface $client)
     {
         $account = $this->finder->findAccount()->byClient($client)->one();
 
         if (!$this->module->enableRegistration && ($account === null || $account->user === null)) {
-            Yii::$app->session->setFlash('danger', Yii::t('user', 'Registration on this website is disabled'));
-            $this->action->successUrl = Url::to(['/user/security/login']);
-
-            return;
+            throw new ConflictHttpException(Yii::t('user', 'Registration on this website is disabled'));
         }
 
         if ($account === null) {
@@ -226,14 +224,13 @@ class SecurityController extends Controller
 
         if ($account->user instanceof User) {
             if ($account->user->isBlocked) {
-                Yii::$app->session->setFlash('danger', Yii::t('user', 'Your account has been blocked.'));
-                $this->action->successUrl = Url::to(['/user/security/login']);
+                throw new ConflictHttpException(Yii::t('user', 'Your account has been blocked.'));
             } else {
                 Yii::$app->user->login($account->user, $this->module->rememberFor);
-                $this->action->successUrl = Yii::$app->getUser()->getReturnUrl();
+                $this->action->successUrl = Yii::$app->user->getReturnUrl();
             }
         } else {
-            $this->action->successUrl = $account->getConnectUrl();
+            $this->action->successUrl = $account->getConnectUrl(true);
         }
 
         $this->trigger(self::EVENT_AFTER_AUTHENTICATE, $event);
@@ -252,10 +249,10 @@ class SecurityController extends Controller
 
         $this->trigger(self::EVENT_BEFORE_CONNECT, $event);
 
-        $account->connectWithUser($client);
+        if ($account->connectWithUser($client, true)) {
+            $this->trigger(self::EVENT_AFTER_CONNECT, $event);
 
-        $this->trigger(self::EVENT_AFTER_CONNECT, $event);
-
-        $this->action->successUrl = Url::to(['/user/settings/networks']);
+            $this->action->successUrl = Url::to(['/user/rest/settings/networks']);
+        }
     }
 }
