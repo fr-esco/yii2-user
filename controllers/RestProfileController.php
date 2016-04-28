@@ -15,6 +15,7 @@ use dektrium\user\Finder;
 use Yii;
 use yii\filters\AccessControl;
 use yii\rest\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -101,6 +102,7 @@ class RestProfileController extends Controller
         $profile = $this->finder->findProfileById($id);
 
         if ($profile === null) {
+            throw new BadRequestHttpException();
             throw new NotFoundHttpException();
         }
 
