@@ -154,20 +154,13 @@ class RegistrationController extends Controller
 
         $this->trigger(self::EVENT_BEFORE_REGISTER, $event);
 
-        if ($model->load(Yii::$app->request->post()) && $model->register()) {
-
+        if ($model->load(Yii::$app->request->post(), '') && $model->register()) {
             $this->trigger(self::EVENT_AFTER_REGISTER, $event);
 
-            return $this->render('/message', [
-                'title' => Yii::t('user', 'Your account has been created'),
-                'module' => $this->module,
-            ]);
+            return Yii::$app->response->setStatusCode(201, Yii::t('user', 'Your account has been created'));
         }
 
-        return $this->render('register', [
-            'model' => $model,
-            'module' => $this->module,
-        ]);
+        return $model;
     }
 
     /**
@@ -272,8 +265,6 @@ class RegistrationController extends Controller
             ]);
         }
 
-        return $this->render('resend', [
-            'model' => $model,
-        ]);
+        return $model;
     }
 }
