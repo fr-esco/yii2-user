@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace dektrium\user\controllers;
+namespace dektrium\user\controllers\rest;
 
 use dektrium\user\Finder;
 use dektrium\user\models\Account;
@@ -24,7 +24,7 @@ use yii\authclient\ClientInterface;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\Url;
-use yii\web\Controller;
+use yii\rest\Controller;
 use yii\web\Response;
 
 /**
@@ -32,7 +32,7 @@ use yii\web\Response;
  *
  * @property Module $module
  *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
+ * @author Francesco Colamonici <f.colamonici@gmail.com>
  */
 class SecurityController extends Controller
 {
@@ -95,7 +95,7 @@ class SecurityController extends Controller
      * @param string $id
      * @param Module $module
      * @param Finder $finder
-     * @param array  $config
+     * @param array $config
      */
     public function __construct($id, $module, Finder $finder, $config = [])
     {
@@ -113,13 +113,7 @@ class SecurityController extends Controller
                     ['allow' => true, 'actions' => ['login', 'auth', 'blocked'], 'roles' => ['?']],
                     ['allow' => true, 'actions' => ['login', 'auth', 'logout'], 'roles' => ['@']],
                 ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
+            ]
         ];
     }
 
@@ -127,6 +121,9 @@ class SecurityController extends Controller
     public function actions()
     {
         return [
+            'options' => [
+                'class' => 'yii\rest\OptionsAction',
+            ],
             'auth' => [
                 'class' => AuthAction::className(),
                 // if user is not logged in, will try to log him in, otherwise
@@ -139,6 +136,18 @@ class SecurityController extends Controller
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function verbs()
+    {
+        return [
+            'login' => ['POST'],
+            'logout' => ['POST'],
+            'auth' => ['POST'],
+        ];
+    }
+
+    /**
      * Displays the login page.
      *
      * @return string|Response
@@ -146,7 +155,7 @@ class SecurityController extends Controller
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            $this->goHome();
+            return true;
         }
 
         /** @var LoginForm $model */
@@ -158,13 +167,11 @@ class SecurityController extends Controller
 
         if ($model->load(Yii::$app->getRequest()->post()) && $model->login()) {
             $this->trigger(self::EVENT_AFTER_LOGIN, $event);
-            return $this->goBack();
+
+            return true;
         }
 
-        return $this->render('login', [
-            'model'  => $model,
-            'module' => $this->module,
-        ]);
+        return $model;
     }
 
     /**
@@ -199,6 +206,7 @@ class SecurityController extends Controller
         if (!$this->module->enableRegistration && ($account === null || $account->user === null)) {
             Yii::$app->session->setFlash('danger', Yii::t('user', 'Registration on this website is disabled'));
             $this->action->successUrl = Url::to(['/user/security/login']);
+
             return;
         }
 
@@ -236,7 +244,7 @@ class SecurityController extends Controller
     {
         /** @var Account $account */
         $account = Yii::createObject(Account::className());
-        $event   = $this->getAuthEvent($account, $client);
+        $event = $this->getAuthEvent($account, $client);
 
         $this->trigger(self::EVENT_BEFORE_CONNECT, $event);
 
