@@ -70,7 +70,8 @@ class Bootstrap implements BootstrapInterface
             } else {
                 Yii::$container->set('yii\web\User', [
                     'enableAutoLogin' => true,
-                    'loginUrl'        => ['/user/security/login'],
+                    'enableSession'   => $module->enableSession,
+                    'loginUrl'        => null, // ['/user/security/login'],
                     'identityClass'   => $module->modelMap['User'],
                 ]);
 

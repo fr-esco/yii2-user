@@ -55,6 +55,9 @@ class Module extends BaseModule
     /** @var int Email changing strategy. */
     public $emailChangeStrategy = self::STRATEGY_DEFAULT;
 
+    /** @var bool Whether to enable password recovery. */
+    public $enableSession = false;
+
     /** @var int The time you want the user will be remembered without asking for credentials. */
     public $rememberFor = 1209600; // two weeks
 
