@@ -14,6 +14,7 @@ namespace dektrium\user\controllers;
 use dektrium\user\Finder;
 use Yii;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
 
@@ -67,7 +68,7 @@ class RestProfileController extends Controller
     /** @inheritdoc */
     public function behaviors()
     {
-        return [
+        return ArrayHelper::merge(parent::behaviors(), [
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [
@@ -75,7 +76,7 @@ class RestProfileController extends Controller
                     ['allow' => true, 'actions' => ['show'], 'roles' => ['?', '@']],
                 ],
             ],
-        ];
+        ]);
     }
 
     /**
