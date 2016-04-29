@@ -22,6 +22,7 @@ use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\db\Query;
 use yii\web\Application as WebApplication;
+use yii\web\ConflictHttpException;
 use yii\web\IdentityInterface;
 use yii\helpers\ArrayHelper;
 
@@ -290,10 +291,12 @@ class User extends ActiveRecord implements IdentityInterface
      * Attempts user confirmation.
      *
      * @param string $code Confirmation code.
+     * @param bool $rest Whether the context is REST
      *
      * @return boolean
+     * @throws ConflictHttpException
      */
-    public function attemptConfirmation($code)
+    public function attemptConfirmation($code, $rest = false)
     {
         $token = $this->finder->findTokenByParams($this->id, $code, Token::TYPE_CONFIRMATION);
 
@@ -301,13 +304,22 @@ class User extends ActiveRecord implements IdentityInterface
             $token->delete();
             if (($success = $this->confirm())) {
                 Yii::$app->user->login($this, $this->module->rememberFor);
-                $message = Yii::t('user', 'Thank you, registration is now complete.');
+                if (!$rest)
+                    $message = Yii::t('user', 'Thank you, registration is now complete.');
             } else {
-                $message = Yii::t('user', 'Something went wrong and your account has not been confirmed.');
+                if ($rest) {
+                    throw new ConflictHttpException(\Yii::t('user', 'Something went wrong and your account has not been confirmed.'));
+                } else {
+                    $message = Yii::t('user', 'Something went wrong and your account has not been confirmed.');
+                }
             }
         } else {
-            $success = false;
-            $message = Yii::t('user', 'The confirmation link is invalid or expired. Please try requesting a new one.');
+            if ($rest) {
+                throw new ConflictHttpException(\Yii::t('user', 'The confirmation link is invalid or expired. Please try requesting a new one.'));
+            } else {
+                $success = false;
+                $message = Yii::t('user', 'The confirmation link is invalid or expired. Please try requesting a new one.');
+            }
         }
 
         Yii::$app->session->setFlash($success ? 'success' : 'danger', $message);

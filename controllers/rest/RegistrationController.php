@@ -227,14 +227,11 @@ class RegistrationController extends Controller
 
         $this->trigger(self::EVENT_BEFORE_CONFIRM, $event);
 
-        $user->attemptConfirmation($code);
+        if ($user->attemptConfirmation($code, true)) {
+            $this->trigger(self::EVENT_AFTER_CONFIRM, $event);
 
-        $this->trigger(self::EVENT_AFTER_CONFIRM, $event);
-
-        return $this->render('/message', [
-            'title' => Yii::t('user', 'Account confirmation'),
-            'module' => $this->module,
-        ]);
+            return Yii::$app->response->setStatusCode(200, Yii::t('user', 'Thank you, registration is now complete.'));
+        }
     }
 
     /**
