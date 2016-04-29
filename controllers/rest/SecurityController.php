@@ -152,12 +152,14 @@ class SecurityController extends Controller
     /**
      * Displays the login page.
      *
-     * @return Token|LoginForm
+     * @return array|LoginForm
      */
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return true;
+            /** @var User $user */
+            $user = Yii::$app->user->identity;
+            return ['id' => $user->id, 'token' => $user->authToken];
         }
 
         /** @var LoginForm $model */
@@ -169,7 +171,7 @@ class SecurityController extends Controller
         if ($model->load(Yii::$app->request->getBodyParams(), '') && $model->login()) {
             $this->trigger(self::EVENT_AFTER_LOGIN, $event);
 
-            return $model->user->generateAccessToken();
+            return ['id' => $model->user->id, 'token' => $model->user->generateAccessToken()->code];
         }
 
         return $model;
