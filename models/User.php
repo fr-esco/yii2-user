@@ -296,6 +296,7 @@ class User extends ActiveRecord implements IdentityInterface
      *
      * @return boolean
      * @throws ConflictHttpException
+     * @throws UnprocessableEntityHttpException
      */
     public function attemptConfirmation($code, $rest = false)
     {
@@ -305,8 +306,7 @@ class User extends ActiveRecord implements IdentityInterface
             $token->delete();
             if (($success = $this->confirm())) {
                 Yii::$app->user->login($this, $this->module->rememberFor);
-                if (!$rest)
-                    $message = Yii::t('user', 'Thank you, registration is now complete.');
+                $message = Yii::t('user', 'Thank you, registration is now complete.');
             } else {
                 if ($rest) {
                     throw new ConflictHttpException(\Yii::t('user', 'Something went wrong and your account has not been confirmed.'));
