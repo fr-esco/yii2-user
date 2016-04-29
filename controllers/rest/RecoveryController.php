@@ -107,6 +107,9 @@ class RecoveryController extends Controller
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(), [
+            'authenticator' => [
+                'except' => ['request', 'reset'],
+            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [

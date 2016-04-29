@@ -104,6 +104,10 @@ class RegistrationController extends Controller
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(), [
+            'authenticator' => [
+                'optional' => ['confirm', 'resend'],
+                'except' => ['register', 'connect'],
+            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [

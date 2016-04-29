@@ -65,6 +65,9 @@ class ProfileController extends Controller
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(), [
+            'authenticator' => [
+                'optional' => ['show'],
+            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [

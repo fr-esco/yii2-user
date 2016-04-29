@@ -126,6 +126,9 @@ class SettingsController extends Controller
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(), [
+            'authenticator' => [
+                'optional' => ['confirm'],
+            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [
