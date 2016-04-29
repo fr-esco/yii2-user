@@ -33,6 +33,7 @@ use yii\helpers\ArrayHelper;
  * @property bool    $isAdmin
  * @property bool    $isBlocked
  * @property bool    $isConfirmed
+ * @property string  $authToken
  *
  * Database fields:
  * @property integer $id
@@ -76,6 +77,9 @@ class User extends ActiveRecord implements IdentityInterface
 
     /** @var Profile|null */
     private $_profile;
+
+    /** @var string|null */
+    public $authToken;
 
     /** @var string Default username regexp */
     public static $usernameRegexp = '/^[-a-zA-Z0-9_\.@]+$/';
@@ -501,8 +505,10 @@ class User extends ActiveRecord implements IdentityInterface
         if ($token instanceof Token) {
             if ($token->isExpired)
                 $token->delete();
-            else
+            else {
+                $token->user->authToken = $code;
                 return $token->user;
+            }
         }
 
         return null;
@@ -510,17 +516,47 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
-     * Delete User's Access Tokens.
+     * Generate a fresh Access Token.
+     *
+     * @return Token
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function generateAccessToken() {
+        /** @var Token $token */
+        $token = Yii::createObject(['class' =>$this->module->modelMap['Token'], 'type' => Token::TYPE_AUTHENTICATION]);
+        $token->link('user', $this);
+
+        $this->authToken = $token->code;
+
+        return $token;
+    }
+
+    /**
+     * Delete User's current Access Token.
      *
      * @return bool
      */
-    private function clearAccessToken() {
+    public function clearCurrentAccessToken() {
+        return $this->clearAccessToken($this->authToken);
+    }
+
+    /**
+     * Delete User's Access Tokens.
+     *
+     * @param string $code
+     *
+     * @return bool
+     */
+    private function clearAccessToken($code = null) {
         /** @var Token $token */
         $token = $this->module->modelMap['Token'];
-        return $token::deleteAll([
+        $where = [
             'user_id' => $this->id,
             'type' => Token::TYPE_AUTHENTICATION,
-        ]) !== false;
+        ];
+        if ($code)
+            $where['code'] = $code;
+        return $token::deleteAll($where) !== false;
     }
 
 }

@@ -15,6 +15,7 @@ use dektrium\user\Finder;
 use dektrium\user\controllers\rest\BaseController as Controller;
 use dektrium\user\models\Account;
 use dektrium\user\models\LoginForm;
+use dektrium\user\models\Token;
 use dektrium\user\models\User;
 use dektrium\user\Module;
 use dektrium\user\traits\EventTrait;
@@ -147,7 +148,7 @@ class SecurityController extends Controller
     /**
      * Displays the login page.
      *
-     * @return bool|LoginForm
+     * @return Token|LoginForm
      */
     public function actionLogin()
     {
@@ -164,7 +165,7 @@ class SecurityController extends Controller
         if ($model->load(Yii::$app->request->getBodyParams(), '') && $model->login()) {
             $this->trigger(self::EVENT_AFTER_LOGIN, $event);
 
-            return true;
+            return $model->user->generateAccessToken();
         }
 
         return $model;
@@ -178,14 +179,16 @@ class SecurityController extends Controller
      */
     public function actionLogout()
     {
-        $event = $this->getUserEvent(Yii::$app->user->identity);
+        /** @var User $user */
+        $user = Yii::$app->user->identity;
+        $event = $this->getUserEvent($user);
 
         $this->trigger(self::EVENT_BEFORE_LOGOUT, $event);
 
         if (Yii::$app->user->logout()) {
             $this->trigger(self::EVENT_AFTER_LOGOUT, $event);
 
-            return true;
+            return $user->clearCurrentAccessToken();
         }
 
         throw new ConflictHttpException;

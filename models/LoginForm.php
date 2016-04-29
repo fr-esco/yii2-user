@@ -37,7 +37,7 @@ class LoginForm extends Model
     public $rememberMe = false;
 
     /** @var \dektrium\user\models\User */
-    protected $user;
+    public $user;
 
     /** @var Finder */
     protected $finder;
