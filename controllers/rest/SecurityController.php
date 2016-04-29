@@ -106,6 +106,10 @@ class SecurityController extends Controller
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(), [
+            'authenticator' => [
+                'optional' => ['login', 'auth'],
+                'except' => ['blocked'],
+            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [
