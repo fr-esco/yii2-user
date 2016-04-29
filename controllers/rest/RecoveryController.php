@@ -164,11 +164,15 @@ class RecoveryController extends Controller
 
         /** @var Token $token */
         $token = $this->finder->findToken(['user_id' => $id, 'code' => $code, 'type' => Token::TYPE_RECOVERY])->one();
+        if ($token === null) {
+            throw new UnprocessableEntityHttpException(Yii::t('user', 'Recovery link is invalid or expired. Please try requesting a new one.'));
+        }
+
         $event = $this->getResetPasswordEvent($token);
 
         $this->trigger(self::EVENT_BEFORE_TOKEN_VALIDATE, $event);
 
-        if ($token === null || $token->isExpired || $token->user === null) {
+        if ($token->isExpired || $token->user === null) {
             $this->trigger(self::EVENT_AFTER_TOKEN_VALIDATE, $event);
 
             throw new UnprocessableEntityHttpException(Yii::t('user', 'Recovery link is invalid or expired. Please try requesting a new one.'));
