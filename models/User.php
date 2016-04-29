@@ -521,9 +521,13 @@ class User extends ActiveRecord implements IdentityInterface
      * @return Token
      * @throws \yii\base\InvalidConfigException
      */
-    public function generateAccessToken() {
+    public function generateAccessToken()
+    {
+        if (!$this->module->enableMultipleSessionRest)
+            $this->clearAccessToken();
+
         /** @var Token $token */
-        $token = Yii::createObject(['class' =>$this->module->modelMap['Token'], 'type' => Token::TYPE_AUTHENTICATION]);
+        $token = Yii::createObject(['class' => $this->module->modelMap['Token'], 'type' => Token::TYPE_AUTHENTICATION]);
         $token->link('user', $this);
 
         $this->authToken = $token->code;
