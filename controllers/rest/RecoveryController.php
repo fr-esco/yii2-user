@@ -9,28 +9,28 @@
  * file that was distributed with this source code.
  */
 
-namespace dektrium\user\controllers;
+namespace dektrium\user\controllers\rest;
 
 use dektrium\user\Finder;
 use dektrium\user\models\RecoveryForm;
 use dektrium\user\models\Token;
-use dektrium\user\traits\AjaxValidationTrait;
 use dektrium\user\traits\EventTrait;
 use Yii;
 use yii\filters\AccessControl;
-use yii\web\Controller;
+use yii\helpers\ArrayHelper;
+use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\UnprocessableEntityHttpException;
 
 /**
  * RecoveryController manages password recovery process.
  *
  * @property \dektrium\user\Module $module
  *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
+ * @author Francesco Colamonici <f.colamonici@gmail.com>
  */
 class RecoveryController extends Controller
 {
-    use AjaxValidationTrait;
     use EventTrait;
 
     /**
@@ -73,10 +73,10 @@ class RecoveryController extends Controller
     protected $finder;
 
     /**
-     * @param string           $id
+     * @param string $id
      * @param \yii\base\Module $module
-     * @param Finder           $finder
-     * @param array            $config
+     * @param Finder $finder
+     * @param array $config
      */
     public function __construct($id, $module, Finder $finder, $config = [])
     {
@@ -85,16 +85,35 @@ class RecoveryController extends Controller
     }
 
     /** @inheritdoc */
-    public function behaviors()
+    public function actions()
     {
         return [
+            'options' => [
+                'class' => 'yii\rest\OptionsAction',
+            ],
+        ];
+    }
+
+    /** @inheritdoc */
+    protected function verbs()
+    {
+        return [
+            'request' => ['POST'],
+            'reset' => ['POST'],
+        ];
+    }
+
+    /** @inheritdoc */
+    public function behaviors()
+    {
+        return ArrayHelper::merge(parent::behaviors(), [
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [
                     ['allow' => true, 'actions' => ['request', 'reset'], 'roles' => ['?']],
                 ],
             ],
-        ];
+        ]);
     }
 
     /**
@@ -111,35 +130,31 @@ class RecoveryController extends Controller
 
         /** @var RecoveryForm $model */
         $model = Yii::createObject([
-            'class'    => RecoveryForm::className(),
+            'class' => RecoveryForm::className(),
             'scenario' => 'request',
         ]);
         $event = $this->getFormEvent($model);
 
-        $this->performAjaxValidation($model);
         $this->trigger(self::EVENT_BEFORE_REQUEST, $event);
 
-        if ($model->load(Yii::$app->request->post()) && $model->sendRecoveryMessage()) {
+        if ($model->load(Yii::$app->request->post(), '') && $model->sendRecoveryMessage()) {
             $this->trigger(self::EVENT_AFTER_REQUEST, $event);
-            return $this->render('/message', [
-                'title'  => Yii::t('user', 'Recovery message sent'),
-                'module' => $this->module,
-            ]);
+
+            return Yii::$app->response->setStatusCode(200, Yii::t('user', 'Recovery message sent'));
         }
 
-        return $this->render('request', [
-            'model' => $model,
-        ]);
+        return $model;
     }
 
     /**
      * Displays page where user can reset password.
      *
-     * @param int    $id
+     * @param int $id
      * @param string $code
      *
      * @return string
      * @throws \yii\web\NotFoundHttpException
+     * @throws UnprocessableEntityHttpException;
      */
     public function actionReset($id, $code)
     {
@@ -155,33 +170,25 @@ class RecoveryController extends Controller
 
         if ($token === null || $token->isExpired || $token->user === null) {
             $this->trigger(self::EVENT_AFTER_TOKEN_VALIDATE, $event);
-            Yii::$app->session->setFlash('danger', Yii::t('user', 'Recovery link is invalid or expired. Please try requesting a new one.'));
-            return $this->render('/message', [
-                'title'  => Yii::t('user', 'Invalid or expired link'),
-                'module' => $this->module,
-            ]);
+
+            throw new UnprocessableEntityHttpException(Yii::t('user', 'Recovery link is invalid or expired. Please try requesting a new one.'));
         }
 
         /** @var RecoveryForm $model */
         $model = Yii::createObject([
-            'class'    => RecoveryForm::className(),
+            'class' => RecoveryForm::className(),
             'scenario' => 'reset',
         ]);
         $event->setForm($model);
 
-        $this->performAjaxValidation($model);
         $this->trigger(self::EVENT_BEFORE_RESET, $event);
 
-        if ($model->load(Yii::$app->getRequest()->post()) && $model->resetPassword($token)) {
+        if ($model->load(Yii::$app->request->post(), '') && $model->resetPassword($token)) {
             $this->trigger(self::EVENT_AFTER_RESET, $event);
-            return $this->render('/message', [
-                'title'  => Yii::t('user', 'Password has been changed'),
-                'module' => $this->module,
-            ]);
+
+            return Yii::$app->response->setStatusCode(200, Yii::t('user', 'Password has been changed'));
         }
 
-        return $this->render('reset', [
-            'model' => $model,
-        ]);
+        return $model;
     }
 }
