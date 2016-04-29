@@ -23,6 +23,7 @@ use yii\db\ActiveRecord;
 use yii\db\Query;
 use yii\web\Application as WebApplication;
 use yii\web\ConflictHttpException;
+use yii\web\UnprocessableEntityHttpException;
 use yii\web\IdentityInterface;
 use yii\helpers\ArrayHelper;
 
@@ -315,7 +316,7 @@ class User extends ActiveRecord implements IdentityInterface
             }
         } else {
             if ($rest) {
-                throw new ConflictHttpException(\Yii::t('user', 'The confirmation link is invalid or expired. Please try requesting a new one.'));
+                throw new UnprocessableEntityHttpException(\Yii::t('user', 'The confirmation link is invalid or expired. Please try requesting a new one.'));
             } else {
                 $success = false;
                 $message = Yii::t('user', 'The confirmation link is invalid or expired. Please try requesting a new one.');
