@@ -84,7 +84,8 @@ class User extends ActiveRecord implements IdentityInterface
      * @return Finder
      * @throws \yii\base\InvalidConfigException
      */
-    protected function getFinder() {
+    protected function getFinder()
+    {
         return Yii::$container->get(Finder::className());
     }
 
@@ -92,7 +93,8 @@ class User extends ActiveRecord implements IdentityInterface
      * @return Mailer
      * @throws \yii\base\InvalidConfigException
      */
-    protected function getMailer() {
+    protected function getMailer()
+    {
         return Yii::$container->get(Mailer::className());
     }
 
@@ -117,7 +119,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function getIsAdmin()
     {
-        return (\Yii::$app->getAuthManager() && $this->module->adminPermission  ? \Yii::$app->user->can($this->module->adminPermission) : false) || in_array($this->username, $this->module->admins);
+        return (\Yii::$app->getAuthManager() && $this->module->adminPermission ? \Yii::$app->user->can($this->module->adminPermission) : false) || in_array($this->username, $this->module->admins);
     }
 
     /**
@@ -190,6 +192,7 @@ class User extends ActiveRecord implements IdentityInterface
     public function scenarios()
     {
         $scenarios = parent::scenarios();
+
         return ArrayHelper::merge($scenarios, [
             'register' => ['username', 'email', 'password'],
             'connect'  => ['username', 'email'],
@@ -405,8 +408,8 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return (bool)$this->updateAttributes([
             'blocked_at' => time(),
-            'auth_key'   => Yii::$app->security->generateRandomString(),
-        ]);
+            'auth_key' => Yii::$app->security->generateRandomString(),
+        ]) && $this->clearAccessToken();
     }
 
     /**
@@ -484,8 +487,40 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /** @inheritdoc */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public static function findIdentityByAccessToken($code, $type = null)
     {
-        throw new NotSupportedException('Method "' . __CLASS__ . '::' . __METHOD__ . '" is not implemented.');
+        /** @var Finder $finder */
+        $finder = Yii::$container->get(Finder::className());
+
+        /** @var Token $token */
+        $token = $finder->findToken([
+            'code' => $code,
+            'type' => Token::TYPE_AUTHENTICATION,
+        ])->with('user')->one();
+
+        if ($token instanceof Token) {
+            if ($token->isExpired)
+                $token->delete();
+            else
+                return $token->user;
+        }
+
+        return null;
+//        throw new NotSupportedException('Method "' . __CLASS__ . '::' . __METHOD__ . '" is not implemented.');
     }
+
+    /**
+     * Delete User's Access Tokens.
+     *
+     * @return bool
+     */
+    private function clearAccessToken() {
+        /** @var Token $token */
+        $token = $this->module->modelMap['Token'];
+        return $token::deleteAll([
+            'user_id' => $this->id,
+            'type' => Token::TYPE_AUTHENTICATION,
+        ]) !== false;
+    }
+
 }
