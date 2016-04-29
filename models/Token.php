@@ -36,6 +36,7 @@ class Token extends ActiveRecord
     const TYPE_RECOVERY          = 1;
     const TYPE_CONFIRM_NEW_EMAIL = 2;
     const TYPE_CONFIRM_OLD_EMAIL = 3;
+    const TYPE_AUTHENTICATION    = 9;
 
     /**
      * @return \yii\db\ActiveQuery
@@ -82,6 +83,9 @@ class Token extends ActiveRecord
             case self::TYPE_RECOVERY:
                 $expirationTime = $this->module->recoverWithin;
                 break;
+            case self::TYPE_AUTHENTICATION:
+                $expirationTime = $this->module->rememberFor;
+                break;
             default:
                 throw new \RuntimeException();
         }
@@ -93,7 +97,8 @@ class Token extends ActiveRecord
     public function beforeSave($insert)
     {
         if ($insert) {
-            static::deleteAll(['user_id' => $this->user_id, 'type' => $this->type]);
+            if (!$this->type === self::TYPE_AUTHENTICATION || !$this->module->enableMultipleSessionRest)
+                static::deleteAll(['user_id' => $this->user_id, 'type' => $this->type]);
             $this->setAttribute('created_at', time());
             $this->setAttribute('code', Yii::$app->security->generateRandomString());
         }

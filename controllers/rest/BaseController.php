@@ -21,7 +21,7 @@ use yii\rest\Controller;
  *
  * @author Francesco Colamonici <f.colamonici@gmail.com>
  */
-abstract class BasicController extends Controller
+abstract class BaseController extends Controller
 {
     /** @inheritdoc */
     public function init()

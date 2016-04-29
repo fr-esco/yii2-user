@@ -12,13 +12,13 @@
 namespace dektrium\user\controllers\rest;
 
 use dektrium\user\Finder;
+use dektrium\user\controllers\rest\BaseController as Controller;
 use dektrium\user\models\RecoveryForm;
 use dektrium\user\models\Token;
 use dektrium\user\traits\EventTrait;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
-use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\UnprocessableEntityHttpException;
 

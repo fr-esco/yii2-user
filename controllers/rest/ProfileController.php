@@ -12,10 +12,10 @@
 namespace dektrium\user\controllers\rest;
 
 use dektrium\user\Finder;
+use dektrium\user\controllers\rest\BaseController as Controller;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
-use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
 
 /**

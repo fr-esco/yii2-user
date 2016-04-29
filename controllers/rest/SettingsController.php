@@ -12,6 +12,7 @@
 namespace dektrium\user\controllers\rest;
 
 use dektrium\user\Finder;
+use dektrium\user\controllers\rest\BaseController as Controller;
 use dektrium\user\models\Profile;
 use dektrium\user\models\SettingsForm;
 use dektrium\user\Module;
@@ -19,7 +20,6 @@ use dektrium\user\traits\EventTrait;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
-use yii\rest\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 

@@ -15,6 +15,7 @@ use dektrium\user\events\ConnectEvent;
 use dektrium\user\events\FormEvent;
 use dektrium\user\events\UserEvent;
 use dektrium\user\Finder;
+use dektrium\user\controllers\rest\BaseController as Controller;
 use dektrium\user\models\RegistrationForm;
 use dektrium\user\models\ResendForm;
 use dektrium\user\models\User;
@@ -22,7 +23,6 @@ use dektrium\user\traits\EventTrait;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
-use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
 
 /**

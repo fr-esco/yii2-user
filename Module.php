@@ -56,7 +56,13 @@ class Module extends BaseModule
     public $emailChangeStrategy = self::STRATEGY_DEFAULT;
 
     /** @var bool Whether to enable sessions. */
-    public $enableSession = false;
+    public $enableSessionRest = false;
+
+    /** @var bool Whether to enable multiple sessions active at the same time. */
+    public $enableMultipleSessionRest = true;
+
+    /** @var array Array of supported authentication methods for REST. */
+    public $authMethodsRest = [];
 
     /** @var int The time you want the user will be remembered without asking for credentials. */
     public $rememberFor = 1209600; // two weeks

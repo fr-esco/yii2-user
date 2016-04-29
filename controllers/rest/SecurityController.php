@@ -12,6 +12,7 @@
 namespace dektrium\user\controllers\rest;
 
 use dektrium\user\Finder;
+use dektrium\user\controllers\rest\BaseController as Controller;
 use dektrium\user\models\Account;
 use dektrium\user\models\LoginForm;
 use dektrium\user\models\User;
@@ -23,7 +24,6 @@ use yii\authclient\ClientInterface;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
-use yii\rest\Controller;
 use yii\web\ConflictHttpException;
 
 /**
