@@ -255,14 +255,10 @@ class RegistrationController extends Controller
 
         $this->trigger(self::EVENT_BEFORE_RESEND, $event);
 
-        if ($model->load(Yii::$app->request->post()) && $model->resend()) {
-
+        if ($model->load(Yii::$app->request->post(), '') && $model->resend()) {
             $this->trigger(self::EVENT_AFTER_RESEND, $event);
 
-            return $this->render('/message', [
-                'title' => Yii::t('user', 'A new confirmation link has been sent'),
-                'module' => $this->module,
-            ]);
+            return Yii::$app->response->setStatusCode(200, Yii::t('user', 'A new confirmation link has been sent'));
         }
 
         return $model;
