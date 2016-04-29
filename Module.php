@@ -94,7 +94,7 @@ class Module extends BaseModule
      *
      * @See [[GroupUrlRule::prefix]]
      */
-    public $urlPrefixRest = 'user-rest';
+    public $urlPrefixRest = 'user/rest';
 
     /** @var array The rules to be used in URL management. */
     public $urlRules = [
