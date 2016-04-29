@@ -9,18 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace dektrium\user\controllers;
+namespace dektrium\user\controllers\rest;
 
 use dektrium\user\Finder;
 use dektrium\user\models\Profile;
 use dektrium\user\models\SettingsForm;
 use dektrium\user\Module;
-use dektrium\user\traits\AjaxValidationTrait;
 use dektrium\user\traits\EventTrait;
 use Yii;
 use yii\filters\AccessControl;
-use yii\filters\VerbFilter;
-use yii\web\Controller;
+use yii\helpers\ArrayHelper;
+use yii\rest\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
@@ -29,11 +28,10 @@ use yii\web\NotFoundHttpException;
  *
  * @property \dektrium\user\Module $module
  *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
+ * @author Francesco Colamonici <f.colamonici@gmail.com>
  */
 class SettingsController extends Controller
 {
-    use AjaxValidationTrait;
     use EventTrait;
 
     /**
@@ -103,15 +101,31 @@ class SettingsController extends Controller
     }
 
     /** @inheritdoc */
-    public function behaviors()
+    public function actions()
     {
         return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'disconnect' => ['post'],
-                ],
+            'options' => [
+                'class' => 'yii\rest\OptionsAction',
             ],
+        ];
+    }
+
+    /** @inheritdoc */
+    protected function verbs()
+    {
+        return [
+            'profile' => ['POST'],
+            'account' => ['POST'],
+            'networks' => ['GET', 'HEAD'],
+            'disconnect' => ['POST'],
+            'confirm' => ['POST'],
+        ];
+    }
+
+    /** @inheritdoc */
+    public function behaviors()
+    {
+        return ArrayHelper::merge(parent::behaviors(), [
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [
@@ -127,7 +141,7 @@ class SettingsController extends Controller
                     ],
                 ],
             ],
-        ];
+        ]);
     }
 
     /**
@@ -146,18 +160,14 @@ class SettingsController extends Controller
 
         $event = $this->getProfileEvent($model);
 
-        $this->performAjaxValidation($model);
-
         $this->trigger(self::EVENT_BEFORE_PROFILE_UPDATE, $event);
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            Yii::$app->getSession()->setFlash('success', Yii::t('user', 'Your profile has been updated'));
+        if ($model->load(Yii::$app->request->post(), '') && $model->save()) {
+            Yii::$app->session->setFlash('success', Yii::t('user', 'Your profile has been updated'));
             $this->trigger(self::EVENT_AFTER_PROFILE_UPDATE, $event);
             return $this->refresh();
         }
 
-        return $this->render('profile', [
-            'model' => $model,
-        ]);
+        return $model;
     }
 
     /**
@@ -171,18 +181,14 @@ class SettingsController extends Controller
         $model = Yii::createObject(SettingsForm::className());
         $event = $this->getFormEvent($model);
 
-        $this->performAjaxValidation($model);
-
         $this->trigger(self::EVENT_BEFORE_ACCOUNT_UPDATE, $event);
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post(), '') && $model->save()) {
             Yii::$app->session->setFlash('success', Yii::t('user', 'Your account details have been updated'));
             $this->trigger(self::EVENT_AFTER_ACCOUNT_UPDATE, $event);
             return $this->refresh();
         }
 
-        return $this->render('account', [
-            'model' => $model,
-        ]);
+        return $model;
     }
 
     /**
